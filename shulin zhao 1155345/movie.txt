@@ -1,0 +1,8 @@
+1,Inception,A mind-bending science fiction film directed by Christopher Nolan.,148,English,2010-07-16,USA,Sci-Fi
+2,Star Wars: Episode IV - A New Hope,A space opera directed by George Lucas.,121,English,1977-05-25,USA,Adventure
+3,Lord of the Rings: The Fellowship of the Ring,An epic fantasy adventure film directed by Peter Jackson.,178,English,2001-12-19,USA,Fantasy
+4,The Matrix,A science fiction action film directed by the Wachowskis.,136,English,1999-03-31,USA,Action
+5,Avatar,A groundbreaking science fiction film directed by James Cameron.,162,English,2009-12-18,USA,Sci-Fi
+6,Titanic,A historical romance and disaster film directed by James Cameron.,195,English,1997-12-19,USA,Romance
+7,The Godfather,A crime film directed by Francis Ford Coppola based on Mario Puzo's novel of the same name.,175,English,1972-03-24,USA,Crime
+8,Pulp Fiction,A crime film directed by Quentin Tarantino known for its rich dialogue and nonlinear storyline.,154,English,1994-10-14,USA,Crime

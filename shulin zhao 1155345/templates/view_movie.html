@@ -1,0 +1,53 @@
+<!-- templates/view_movie.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>View Movie - Movie Booking System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .movie-details {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">{{ movie.title }} ({{ movie.release_date.strftime('%Y-%m-%d') }})</h1>
+
+        <div class="card movie-details">
+            <div class="card-body">
+                <p class="card-text">{{ movie.description }}</p>
+            </div>
+            <div class="card-footer text-muted">
+                <strong>Duration:</strong> {{ movie.duration_mins }} mins
+            </div>
+        </div>
+
+        <ul class="list-group mt-3">
+            <li class="list-group-item"><strong>Language:</strong> {{ movie.language }}</li>
+            <li class="list-group-item"><strong>Country:</strong> {{ movie.country }}</li>
+            <li class="list-group-item"><strong>Genre:</strong> {{ movie.genre }}</li>
+        </ul>
+        
+        <!-- Go Back Button -->
+        <button class="btn btn-secondary mt-3" onclick="goBack()">Go Back</button>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

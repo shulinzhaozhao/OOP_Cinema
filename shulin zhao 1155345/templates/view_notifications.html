@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Notifications</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Your Notifications</h1>
+        {% if notifications %}
+            <ul class="list-group mt-3">
+                {% for notification in notifications %}
+                <li class="list-group-item">
+                    <strong>Notification ID:</strong> {{ notification.notification_id }}<br>
+                    <strong>Created On:</strong> {{ notification.created_on.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                    <strong>Content:</strong> {{ notification.content }}
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-3">You have no notifications at this time.</p>
+        {% endif %}
+        <button onclick="goBack()" class="btn btn-primary mt-4">Go Back</button>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript function to go back to the previous page -->
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

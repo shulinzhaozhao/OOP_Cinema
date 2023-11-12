@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Welcome to Movie Booking System</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f3f4f6;
+            font-family: Arial, sans-serif;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c2c7;
+            color: #842029;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .error-icon {
+            margin-right: 10px;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            border-radius: 5px;
+            color: white;
+        }
+        .header-bar h1 {
+            margin-bottom: 0;
+            flex-grow: 1;
+        }
+        .header-btn-group {
+            text-align: right;
+            flex-shrink: 0;
+            display: flex;
+            gap: 10px; /* Spacing between buttons */
+        }
+        .btn-notification {
+            background-color: #3498db;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            position: relative;
+            margin-left: 10px;
+            text-decoration: none; /* Remove underline from link */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-notification:before {
+            content: '!';
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{% if category == 'custom-error' %}error-message{% else %}alert alert-{{ category }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="header-bar">
+            <h1>Welcome to Movie Booking System</h1>
+            <div class="header-btn-group">
+                <a class="btn btn-primary" href="{{ url_for('view_bookings') }}">View Bookings</a>
+                <a class="btn btn-primary" href="{{ url_for('logout') }}">Logout</a>
+                <a class="btn-notification" href="{{ url_for('view_notifications') }}"></a>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-4">
+            <form id="searchForm" class="form-inline">
+                <input type="text" class="form-control mb-2 mr-sm-2" style="width:300px;" id="searchInput" placeholder="Search movies based on title, language, genre, and release date as you type" onkeyup="searchMovies()">
+                <button type="submit" class="btn btn-primary mb-2 mr-sm-2">Search</button>
+            </form>
+        </div>
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered" id="movieTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Release Date</th>
+                        <th>Description</th>
+                        <th>Duration</th>
+                        <th>Language</th>
+                        <th>Country</th>
+                        <th>Genre</th>
+                        <th>View and book</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in movies %}
+                        <tr>
+                            <td class="search-title">{{ movie.title }}</td>
+                            <td class="search-release-date">{{ movie.release_date.strftime('%Y-%m-%d') if movie.release_date else '' }}</td>
+                            <td class="search-description">{{ movie.description }}</td>
+                            <td>{{ movie.duration_mins }} mins</td>
+                            <td class="search-language">{{ movie.language }}</td>
+                            <td>{{ movie.country }}</td>
+                            <td class="search-genre">{{ movie.genre }}</td>
+                            <td><a href="{{ url_for('book_view_schedules', movie_id=movie.movie_id) }}" class="btn btn-primary">View and book</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript function to implement search -->
+    <script>
+        document.getElementById("searchForm").addEventListener("submit", function(event){
+            event.preventDefault();
+            searchMovies();
+        });
+
+        function searchMovies() {
+            var input, filter, table, tr, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("movieTable");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 1; i < tr.length; i++) {
+                var tdTitle = tr[i].getElementsByClassName("search-title")[0];
+                var tdLanguage = tr[i].getElementsByClassName("search-language")[0];
+                var tdGenre = tr[i].getElementsByClassName("search-genre")[0];
+                var tdReleaseDate = tr[i].getElementsByClassName("search-release-date")[0];
+                
+                if (tdTitle || tdLanguage || tdGenre || tdReleaseDate) {
+                    txtValue = tdTitle.textContent + " " + tdLanguage.textContent + " " + tdGenre.textContent + " " + tdReleaseDate.textContent;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>View Schedules - {{ movie.title }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .schedule-details {
+            margin-bottom: 20px;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .flashes li {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .flashes .success {
+            background-color: #e1f3d8;
+            color: #2e7d32;
+        }
+
+        .flashes .error {
+            background-color: #fdd;
+            color: #d32f2f;
+        }
+
+        .movie-details {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">{{ movie.title }} Schedules</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Movie Details -->
+        <div class="card movie-details">
+            <div class="card-body">
+                <p class="card-text">{{ movie.description }}</p>
+            </div>
+            <div class="card-footer text-muted">
+                <strong>Duration:</strong> {{ movie.duration_mins }} mins
+            </div>
+        </div>
+
+        <!-- Movie Characteristics -->
+        <ul class="list-group mt-3">
+            <li class="list-group-item"><strong>Language:</strong> {{ movie.language }}</li>
+            <li class="list-group-item"><strong>Country:</strong> {{ movie.country }}</li>
+            <li class="list-group-item"><strong>Genre:</strong> {{ movie.genre }}</li>
+        </ul>
+
+        <!-- Schedules -->
+        <h2 class="mt-5">Screening Schedule</h2>
+        <div class="input-group mb-3">
+            <input class="form-control" id="searchInput" type="text" placeholder="Search by date, time, or hall...">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" onclick="searchTable()">Search</button>
+            </div>
+        </div>
+
+        <table class="table table-bordered" id="scheduleTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Hall Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                    {% if schedule.screening_date.date() > current_date or (schedule.screening_date.date() == current_date and schedule.start_time.time() >= current_time) %}
+                        <tr>
+                            <td>{{ schedule.screening_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ schedule.start_time.strftime('%H:%M') }}</td>
+                            <td>{{ schedule.end_time.strftime('%H:%M') }}</td>
+                            <td>{{ schedule.hall_name }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+
+            </tbody>
+            
+        </table>
+
+        <!-- Go Back Button -->
+        <button class="btn btn-secondary mt-3" onclick="goBack()">Go Back</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        function searchTable() {
+            var input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("scheduleTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td");
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                            break;
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

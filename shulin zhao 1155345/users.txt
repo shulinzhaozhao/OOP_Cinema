@@ -1,0 +1,4 @@
+
+John Doe,123 Main St,johndoe@email.com,555-1234,customer1,customer1,customer
+Alice Admin,456 Admin St,aliceadmin@email.com,555-5678,admin1,admin1,admin
+Bob Staff,789 Staff St,bobstaff@email.com,555-9012,staff1,staff1,front_desk_staff

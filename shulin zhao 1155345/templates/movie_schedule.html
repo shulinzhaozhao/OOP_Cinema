@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Include necessary meta tags, title, and styles -->
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">{{ movie.title }} Schedules</h1>
+
+        <ul class="list-group">
+            {% for schedule in schedules %}
+                <li class="list-group-item">
+                    <strong>Date:</strong> {{ schedule.screening_date.strftime('%Y-%m-%d') }} | <strong>Time:</strong> {{ schedule.start_time.strftime('%H:%M') }} - {{ schedule.end_time.strftime('%H:%M') }}
+
+                </li>
+            {% endfor %}
+
+        </ul>
+    </div>
+</body>
+</html>

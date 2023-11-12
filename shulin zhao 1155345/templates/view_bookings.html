@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Bookings</title>
+    <!-- Add Bootstrap CSS link -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Your Bookings</h1>
+
+        <!-- Go Back and Dashboard buttons -->
+        <button onclick="goBack()" class="btn btn-secondary mb-3 mr-2">Go Back</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary mb-3">Dashboard</a>
+
+        {% if bookings %}
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Booking Date</th>
+                    <th scope="col">Details</th>
+                    <th scope="col">Total Amount</th>
+                    <th scope="col">Status</th> <!-- Moved "Status" above "Actions" -->
+                    <th scope="col">Actions</th> <!-- Moved "Actions" below "Status" -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ booking.createdOn.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                    <td>
+                        <strong>Movie:</strong> {{ booking.screeningDetail.movie_title }}<br>
+                        <strong>Start Time:</strong> {{ booking.screeningDetail.start_time }}<br>
+                        <strong>End Time:</strong> {{ booking.screeningDetail.end_time }}<br>
+                        <strong>Screening Date:</strong> {{ booking.screeningDetail.screening_date }}<br>
+                        <strong>Seats:</strong> {{ booking.seats | join(", ") }}
+                    </td>
+                    <td>${{ "%.2f"|format(booking.orderTotal|float) }}</td>
+                    <td>
+                        {% if booking.status == 1 %}
+                            Booked
+                        {% elif booking.status == 2 %}
+                            Refunded
+                        {% else %}
+                            Cancelled
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if role == 'front_desk_staff' and booking.status != 1 %}
+                            <!-- Refund button for front desk staff if the booking is not booked -->
+                            <button id="refundButton{{ booking.booking_id }}" onclick="refundBooking(this, {{ booking.booking_id }})" class="btn btn-warning" {% if booking.status == 2 %}disabled{% endif %}>Refund</button>
+                        {% endif %}
+                        {% if booking.status == 1 %}
+                            <!-- Cancel button for all users if the booking is booked -->
+                            <button onclick="cancelBooking({{ booking.booking_id }})" class="btn btn-danger">Cancel</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% else %}
+        <p>You have no bookings.</p>
+        {% endif %}
+    </div>
+
+    <!-- Add Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript to implement Go Back and Delete functionality -->
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        function cancelBooking(bookingId) {
+            if (!confirm("Are you sure you want to cancel this booking?")) {
+                return;
+            }
+            fetch(`/cancel_booking/${bookingId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Booking cancelled successfully!');
+                        location.reload(); // Reload the page to reflect the changes
+                    } else {
+                        alert('Error cancelling booking.');
+                    }
+                });
+        }
+        function refundBooking(button, bookingId) {
+            // Confirm with the user before making the refund action
+            if (!confirm("Are you sure you want to process a refund for this booking?")) {
+                return;
+            }
+            
+            button.disabled = true; // Disable the button immediately after the user confirms
+
+            // Make a POST request to your refund endpoint
+            fetch(`/refund_booking/${bookingId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Refund processed successfully!');
+                        location.reload(); // Reload the page to reflect the changes
+                    } else {
+                        alert('Error processing refund.');
+                        button.disabled = false; // Re-enable the button if there was an error
+                    }
+                })
+                .catch(error => {
+                    alert('Error processing refund.');
+                    button.disabled = false; // Re-enable the button if there was an error
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        ul {
+            padding: 0;
+            list-style: none;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        p, li, label {
+            font-size: 1em;
+        }
+        form {
+            margin-top: 15px;
+        }
+        input[type="text"], button, select {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .card {
+            background: #fff;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .payment-method-fields {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <h1>Booking Details</h1>
+        
+        <div class="card">
+            <h2>Movie Information</h2>
+            <p><strong>Movie Title:</strong> {{ screeningDetail.movie_title }}</p>
+            <p><strong>Date:</strong> {{ screeningDetail.screening_date }}</p>
+            <p><strong>Time:</strong> {{ screeningDetail.start_time }} - {{ screeningDetail.end_time }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Selected Seats</h2>
+            <ul>
+                {% for seat in booked_seats %}
+                    <li>{{ seat }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+
+        
+        <div class="card">
+            <h2>Apply Discount Coupon</h2>
+            <form method="post" action="">
+                <select name="discount_coupon" {% if discountedAmount > 0 %}disabled{% endif %}>
+                    <option value="" disabled {% if discountedAmount == 0 %}selected{% endif %}>Select your coupon</option>
+                    {% for coupon_code in available_coupons %}
+                        <option value="{{ coupon_code }}">{{ coupon_code }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" {% if discountedAmount > 0 %}disabled{% endif %}>Apply</button>
+            </form>
+        </div>        
+        
+        <div class="card">
+            <h2>Payment Summary</h2>
+            <p><strong>Total Amount:</strong> {{ orderTotal }}</p>
+            <p><strong>Discounted Amount:</strong> {{ discountedAmount }}</p>
+            <p><strong>Final Total:</strong> {{ finalTotal }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Payment Options</h2>
+            <form method="post" action="/process_payment">
+
+                <input type="hidden" name="movie_title" value="{{ screeningDetail.movie_title }}">
+                <input type="hidden" name="screening_date" value="{{ screeningDetail.screening_date }}">
+                <input type="hidden" name="start_time" value="{{ screeningDetail.start_time }}">
+                <input type="hidden" name="end_time" value="{{ screeningDetail.end_time }}">
+                <input type="hidden" name="final_total" value="{{ finalTotal }}">
+                {% for seat in booked_seats %}
+                    <input type="hidden" name="seats" value="{{ seat }}">
+                {% endfor %}
+                
+                <label>
+                    <input type="radio" name="payment_method" value="cash"> Cash
+                </label>
+                <label>
+                    <input type="radio" name="payment_method" value="credit_card"> Credit Card
+                </label>
+                <div id="credit_card-fields" class="payment-method-fields">
+                    <label for="credit_card_number">Card Number:</label>
+                    <input type="text" id="credit_card_number" name="credit_card_number">
+                    <label for="expiry_date">Expiry Date:</label>
+                    <input type="text" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                    <label for="name_on_card_credit">Name on Card:</label>
+                    <input type="text" id="name_on_card_credit" name="name_on_card_credit">
+                    <label for="card_type">Card Type:</label>
+                    <input type="text" id="card_type" name="card_type">
+                </div>
+                <label>
+                    <input type="radio" name="payment_method" value="debit_card"> Debit Card
+                </label>
+                <div id="debit_card-fields" class="payment-method-fields">
+                    <label for="debit_card_number">Card Number:</label>
+                    <input type="text" id="debit_card_number" name="debit_card_number">
+                    <label for="expiry_date_debit">Expiry Date:</label>
+                    <input type="text" id="expiry_date_debit" name="expiry_date_debit" placeholder="MM/YY">
+                    <label for="name_on_card_debit">Name on Card:</label>
+                    <input type="text" id="name_on_card_debit" name="name_on_card_debit">
+                    <label for="bank_name">Bank Name:</label>
+                    <input type="text" id="bank_name" name="bank_name">
+                </div>
+                <button type="submit">Complete Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var radios = document.querySelectorAll('input[type="radio"][name="payment_method"]');
+            radios.forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    document.querySelectorAll('.payment-method-fields').forEach(function (div) {
+                        div.style.display = 'none';
+                    });
+                    var selectedOption = document.querySelector('input[type="radio"][name="payment_method"]:checked');
+                    if (selectedOption) {
+                        var divToShow = document.getElementById(selectedOption.value + '-fields');
+                        if (divToShow) {
+                            divToShow.style.display = 'block';
+                        }
+                    }
+                });
+            });
+
+            document.querySelector('form[action="/process_payment"]').addEventListener('submit', function(event) {
+                var paymentMethod = document.querySelector('input[type="radio"][name="payment_method"]:checked').value;
+                if(paymentMethod === 'credit_card') {
+                    // ... validation for credit card ...
+                    if(!validateCreditCard()) {
+                        event.preventDefault();
+                    }
+                } else if(paymentMethod === 'debit_card') {
+                    // ... validation for debit card ...
+                    if(!validateDebitCard()) {
+                        event.preventDefault();
+                    }
+                }
+            });
+
+            function validateCreditCard() {
+                var creditCardNumber = document.getElementById('credit_card_number').value;
+                var expiryDate = document.getElementById('expiry_date').value;
+                var expiryDateValidationResult = validate_expiry_date(expiryDate);
+                if (expiryDateValidationResult) {
+                    alert(expiryDateValidationResult);
+                    return false;
+                }
+                var nameOnCard = document.getElementById('name_on_card_credit').value;
+                var cardType = document.getElementById('card_type').value;
+
+                if(!creditCardNumber || !expiryDate || !nameOnCard || !cardType) {
+                    alert("Please fill in all information.");
+                    return false;
+                }
+                if(!is_valid_card_number(creditCardNumber)) {
+                    alert("Invalid credit card number. Please enter a 16-digit numeric value.");
+                    return false;
+                }
+                if(!validate_name_on_card(nameOnCard)) {
+                    alert("Invalid name on card.");
+                    return false;
+                }
+                if(!validate_card_type(cardType)) {
+                    alert("Invalid card type. Please use Visa, MasterCard, or AMEX.");
+                    return false;
+                }
+                return true;
+            }
+
+
+            function validateDebitCard() {
+                var debitCardNumber = document.getElementById('debit_card_number').value;
+                var expiryDateDebit = document.getElementById('expiry_date_debit').value;
+                var expiryDateValidationResult = validate_expiry_date(expiryDateDebit);
+                if (expiryDateValidationResult) {
+                    alert(expiryDateValidationResult);
+                    return false;
+                }
+                var nameOnCardDebit = document.getElementById('name_on_card_debit').value;
+                var bankName = document.getElementById('bank_name').value;
+
+                if(!debitCardNumber || !expiryDateDebit || !nameOnCardDebit || !bankName) {
+                    alert("Please fill in all information.");
+                    return false;
+                }
+                if(!is_valid_card_number(debitCardNumber)) {
+                    alert("Invalid debit card number.");
+                    return false;
+                }
+                if(!validate_name_on_card(nameOnCardDebit)) {
+                    alert("Invalid name on card.");
+                    return false;
+                }
+                if(!validate_bank_name(bankName)) {
+                    alert("Invalid bank name.");
+                    return false;
+                }
+                return true;
+            }
+
+            function is_valid_card_number(value) {
+                // Remove non-numeric characters
+                var numericValue = value.replace(/\D/g, '');
+                
+                // Check if the input is a 16-digit numeric value
+                if (!/^\d{16}$/.test(numericValue)) {
+                    return false;
+                }
+
+                // Implement Luhn Algorithm to validate the credit card number
+                var sum = 0;
+                for (var i = 0; i < numericValue.length; i++) {
+                    var intVal = parseInt(numericValue.substr(i, 1));
+                    if (i % 2 == 0) {
+                        intVal *= 2;
+                        if (intVal > 9) {
+                            intVal = 1 + (intVal % 10);
+                        }
+                    }
+                    sum += intVal;
+                }
+                return (sum % 10) == 0;
+            }
+
+
+            function validate_expiry_date(expiry_date) {
+                var trimmedExpiryDate = expiry_date.trim();
+                var parts = trimmedExpiryDate.split("/");
+                if (parts.length !== 2) return "Invalid expiry date format. It should be in MM/YY.";
+                var month = parseInt(parts[0], 10);
+                var year = parseInt(parts[1], 10);
+                if (isNaN(month) || isNaN(year) || month < 1 || month > 12) return "Invalid month in expiry date.";
+                
+                var currentDate = new Date();
+                var currentMonth = currentDate.getMonth() + 1;
+                var currentYear = currentDate.getFullYear() % 100;
+
+                if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                    return "Card is expired.";
+                }
+
+                return "";
+            }
+
+
+
+            function validate_name_on_card(name) {
+                if(!name) return false;
+                for(var i = 0; i < name.length; i++) {
+                    if(!isNaN(name.charAt(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function validate_card_type(card_type) {
+                var valid_card_types = ["visa", "mastercard", "amex"];
+                return valid_card_types.includes(card_type.toLowerCase());
+            }
+
+            function validate_bank_name(bank_name) {
+                if(bank_name.length < 3 || bank_name.length > 50) {
+                    return false;
+                }
+                for(var i = 0; i < bank_name.length; i++) {
+                    var char = bank_name.charAt(i);
+                    if(!char.match(/[a-zA-Z\s&]/)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Screening</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 16px;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+        }
+        input, select, button, .back-btn {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover, .back-btn:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 16px;
+            margin-top: -15px;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            const addScreeningButton = document.querySelector("button[type='submit']");
+
+            addScreeningButton.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent the form from submitting
+                const date = document.querySelector("#screening_date").value;
+                const time = document.querySelector("#start_time").value;
+                const hall = document.querySelector("#hall_name").value;
+
+                const message = `Are you sure you want to add a screening on ${date} at ${time} in ${hall} hall?`;
+
+                if (confirm(message)) {
+                    form.submit(); // Manually submit the form
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Screening for {{ movie.title }}</h1>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <form method="post" action="{{ url_for('admin_add_screening', movie_id=movie.movie_id) }}">
+            <label for="screening_date">Screening Date:</label>
+            <input type="date" name="screening_date" id="screening_date" required min="{{ today.strftime('%Y-%m-%d') }}">
+
+            <label for="start_time">Start Time:</label>
+            <input type="time" name="start_time" id="start_time" required>
+
+            <label for="hall_name">Select Hall:</label>
+            <select name="hall_name" id="hall_name">
+                {% for hall in halls %}
+                    <option value="{{ hall.name }}">{{ hall.name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Add Screening</button>
+            <a href="javascript:history.back()" class="back-btn">Back</a>
+        </form>
+    </div>
+</body>
+</html>
